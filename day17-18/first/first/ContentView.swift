@@ -1,10 +1,15 @@
-//
-//  ContentView.swift
-//  first
-//
-//  Created by peppermint100 on 2023/02/06.
-//
 
+/*
+ day 18
+ 1. Add a header to the third section, saying “Amount per person”
+ 2. Add another section showing the total amount for the check
+ – i.e., the original amount plus tip value, without dividing by
+ the number of people.
+ 3. Change the tip percentage picker to show a new screen rather
+ than using a segmented control, and give it a wider range of options
+ – everything from 0% to 100%. Tip: use the range 0..<101 for your
+ range rather than a fixed array.
+ */
 import SwiftUI
 
 struct ContentView: View {
@@ -16,8 +21,9 @@ struct ContentView: View {
     // 인풋의 focus 상태를 나타냄
     @FocusState private var amountIsFocused: Bool
     
-    let tipPercentages = [10, 15, 20, 25, 0]
+    let tipPercentages = Array(1...100)
     
+    // computed value
     var totalPerPerson: Double {
         let peopleCount = Double(numberOfPeople + 2)
         let tipSelection = Double(tipPercentage)
@@ -28,6 +34,14 @@ struct ContentView: View {
         let amountPerPerson = grandTotal / peopleCount
         
         return amountPerPerson
+    }
+    
+    var totalAmountIncludingTip: Double {
+        if checkAmount <= 0 {
+            return 0
+        }
+        
+        return checkAmount + checkAmount * Double(tipPercentage) * 0.01
     }
     
     var body: some View {
@@ -56,8 +70,7 @@ struct ContentView: View {
                         ForEach(tipPercentages, id: \.self) {
                             Text($0, format: .percent)
                         }
-                    }
-                    .pickerStyle(.segmented)
+                    }.pickerStyle(.wheel)
                 } header: {
                     Text("How much tip do you want to leave?")
                 }
@@ -67,6 +80,16 @@ struct ContentView: View {
                          format: .currency(
                             code: Locale.current.currencyCode ?? "USD"))
                     
+                } header: {
+                    Text("Amount Per Person")
+                }
+                
+                Section {
+                    Text(totalAmountIncludingTip,
+                         format: .currency(
+                            code: Locale.current.currencyCode ?? "USD"))
+                } header: {
+                    Text("Total Amount(Including Tip)")
                 }
             }.navigationTitle("WeSplit")
                 .toolbar {
