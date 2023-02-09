@@ -19,6 +19,10 @@ struct ContentView: View {
     @State private var scoreTitle = ""
     
     @State private var score = 0
+    
+    @State private var indexOfFlagHasTapped = 0
+    
+    @State private var tryCount = 0
 
     var body: some View {
         ZStack {
@@ -66,11 +70,29 @@ struct ContentView: View {
                 Text("Score \(score)").foregroundColor(.white).font(.title.bold())
                 Spacer()
             }.padding(20)
-        }.alert(scoreTitle, isPresented: $showingScore) {
-            Button("Continue", action: askQuestion)
-        } message: {
-            Text("Your Score is \(score)")
-        }
+        }.alert(isPresented: $showingScore, content: {
+            // 만약 내부 로직이 간단하다면 강의보다 이 문법을 사용하는게 좋을 듯
+            if tryCount > 7 {
+                return Alert(
+                    title: Text(scoreTitle),
+                    message: scoreTitle == "Correct"
+                        ? Text("Your Final Score is \(score)")
+                        : Text("Your Final Score is \(score), That's a flag of \(countries[indexOfFlagHasTapped])"),
+                    dismissButton: .cancel(Text("Finish and Reset Score")) {
+                        score = 0
+                        tryCount = 0
+                        askQuestion()
+                    })
+            } else {
+                return Alert(
+                    title: Text(scoreTitle),
+                    message: scoreTitle == "Correct"
+                        ? Text("Your Score is \(score)")
+                        : Text("Your Score is \(score), That's a flag of \(countries[indexOfFlagHasTapped])"),
+                    dismissButton: .cancel(Text("Continue")) { askQuestion() }
+                )
+            }
+        })
     }
     
     func flagTapped(_ number: Int) {
@@ -80,7 +102,9 @@ struct ContentView: View {
         } else {
             scoreTitle = "Wrong"
             score-=1
+            indexOfFlagHasTapped = number
         }
+        tryCount+=1
         showingScore = true
     }
     
